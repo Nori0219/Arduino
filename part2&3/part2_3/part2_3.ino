@@ -1,5 +1,7 @@
 #define M5STACK_MPU6886
 #include <M5Core2.h>
+#include "BluetoothSerial.h"
+BluetoothSerial SerialBT;
 
 // 加速度センサーの各軸の値を格納する変数
 float accX = 0.0F;
@@ -16,7 +18,7 @@ float pitch = 0.0F;
 float roll  = 0.0F;
 float yaw   = 0.0F;
 
-unsigned long startTime = 0;//時間
+unsigned long startTime = 0;//時間(startTimeは任意に設定)
 int mode = 0; 
 
 void setup() {
@@ -66,6 +68,20 @@ void loop() {
   M5.Lcd.setCursor(20, 182);
   M5.Lcd.printf("%5.2f  %5.2f  %5.2f deg", pitch, roll, yaw);
 
+ 
+  unsigned long elapsedTime = millis() - startTime; // 経過時間を計算 
+  float seconds = elapsedTime / 1000.0; // 秒に変換
+
+  //Bluetoothでシリアル送信する
+  SerialBT.printf("elapsedTime\n");    
+  SerialBT.print("%7.2f", seconds); //経過時間
+  SerialBT.printf("accX, accY, accZ");     
+  SerialBT.printf("%7.2f, %7.2f, %7.2f\n", accX, accY, accZ);   // 加速度3軸
+  SerialBT.printf("gyroX, gyroY, gyroZ");      
+  SerialBT.printf("%7.2f, %7.2f, %7.2f\n", gyroX, gyroY, gyroZ);// 角速度3軸
+  SerialBT.printf("pitch, roll, yaw"); 
+  SerialBT.printf("%7.2f, %7.2f, %7.2f\n", pitch, roll, yaw);   // 角度３軸
+
   // Aボタンで測定モード切り替え
   if (M5.BtnA.wasPressed()) { mode++; } 
   if (mode == 3) { mode = 0; }
@@ -83,10 +99,7 @@ void loop() {
     Serial.printf("%7.2f, %7.2f, %7.2f\n", pitch, roll, yaw);   // 姿勢角
     break;
   }
-
-  // unsigned long elapsedTime = millis() - startTime; // 経過時間を計算
-  // float seconds = elapsedTime / 1000.0; // 秒に変換
-
+  
   // Serial.printf("%7.2f, %7.2f, %7.2f, %7.2f, %7.2f, %7.2f, %7.2f, %7.2f, %7.2f, %7.2f\n", seconds, accX, accY, accZ, gyroX, gyroY, gyroZ, pitch, roll, yaw);
   delay(150);
 }
